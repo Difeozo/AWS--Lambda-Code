@@ -1,0 +1,57 @@
+import json
+import boto3
+import os
+
+def lambda_handler(event, context):
+  """
+  Lambda function to stop EC2 instances in a specific region based on tags.
+
+  Args:
+    event: The event object passed to the Lambda function (unused here).
+    context: The context object containing information about the Lambda invocation.
+
+  Returns:
+    A dictionary with a message indicating the stopping process completion.
+  """
+
+  # Retrieve region, tag_key, and tag_value from environment variables
+  region = os.environ['REGION']
+  tag_key = os.environ['TAG_KEY']
+  tag_value = os.environ['TAG_VALUE']
+
+  # Create EC2 client
+  ec2 = boto3.client('ec2', region_name=os.environ['REGION'])
+  session = boto3.Session()
+  client = session.client('ec2', region_name=os.environ['REGION'])
+
+  # Filter for running instances with the specified tag
+  filters = [
+      { 'Name': 'instance-state-name', 'Values': ['running'] },
+      { 'Name': 'tag:' + tag_key, 'Values': [tag_value] }
+  ]
+
+  # Get reservations (groups of running instances)
+  reservations = ec2.describe_instances(Filters=filters)['Reservations']
+
+  # Stop instances and build a response message
+  stopped_instances = []
+  for reservation in reservations:
+    for instance in reservation['Instances']:
+      instance_id = instance['InstanceId']
+      stopped_instances.append(instance_id)
+      ec2.stop_instances(InstanceIds=[instance_id])
+
+  message = f"Stopped the following instances: {', '.join(stopped_instances)}"  
+  return {
+      'statusCode': 200,
+      'body': message
+  }
+
+# Set environment variables (replace with your values before deployment)
+os.environ['REGION'] = "us-east-1"
+os.environ['TAG_KEY'] = "environment"
+os.environ['TAG_VALUE'] = "development"
+
+# For local testing (uncomment if needed)
+# if __name__ == "__main__":
+#   lambda_handler({}, {})
