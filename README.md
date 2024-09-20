@@ -2,6 +2,31 @@ Project: AWS Lambda EC2 Automation
 
 This project consists of AWS Lambda functions that automate the management of EC2 instances and EBS volumes based on specific criteria (tags, instance states, volume types). The automation scripts handle tasks like starting and stopping EC2 instances in specified AWS regions, as well as modifying Elastic Block Store (EBS) volumes. The project uses Python with the Boto3 library to interact with AWS services.
 
+                      +-------------------------------------+
+                      |           AWS Lambda                |
+                      +-------------------------------------+
+                                   |
+                                   |
+              +-------------------------+-------------------------+
+              |                          |                         |
++-------------------------+  +-------------------------+  +-------------------------+
+|   Start EC2 Instances    |  |   Stop EC2 Instances    |  |   Modify EBS Volumes    |
++-------------------------+  +-------------------------+  +-------------------------+
+              |                          |                         |
+      +-----------------------+   +-----------------------+    +-----------------------+
+      |   EC2 Instances (AWS)  |   |   EC2 Instances (AWS) |    |   EBS Volumes (AWS)   |
+      +-----------------------+   +-----------------------+    +-----------------------+
+                                   |                          |
+                                   +--------------------------+
+                                           |
+                                           |
+                               +---------------------------+
+                               |    AWS CloudWatch Events   |
+                               +---------------------------+
+                               |    (Scheduled Automation)  |
+                               +---------------------------+
+
+
 Features:
 Start EC2 Instances:
 A Lambda function that starts all stopped EC2 instances in a specific AWS region based on custom tags. The region, tag key, and tag value are configured via environment variables.
